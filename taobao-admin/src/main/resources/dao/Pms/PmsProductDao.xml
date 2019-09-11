@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.taobaoadmin.dao.pms.PmsProductDao">
+    <resultMap id="updateInfoMap" type="com.taobao.taobaoadmin.dto.Pms.PmsProductResult" extends="com.taobao.taobaoadmin.mapper.PmsProductMapper.ResultMapWithBLOBs">
+        <!--商品分类id-->
+        <result column="cateParentId" jdbcType="BIGINT" property="cateParentId" />
+        <!--商品阶梯价格-->
+        <collection property="productLadderList" columnPrefix="ladder_" resultMap="com.taobao.taobaoadmin.mapper.PmsProductLadderMapper.BaseResultMap"/>
+        <!--商品满减价格-->
+        <collection property="productFullReductionList" columnPrefix="full_" resultMap="com.taobao.taobaoadmin.mapper.PmsProductFullReductionMapper.BaseResultMap"/>
+        <!--商品会员价格-->
+        <collection property="memberPriceList" columnPrefix="member_" resultMap="com.taobao.taobaoadmin.mapper.PmsMemberPriceMapper.BaseResultMap"/>
+        <!--商品的sku库存-->
+        <collection property="skuStockList" columnPrefix="sku_" resultMap="com.taobao.taobaoadmin.mapper.PmsSkuStockMapper.BaseResultMap"/>
+        <!--商品参数及自定义规格属性-->
+        <collection property="productAttributeValueList" columnPrefix="attribute_" resultMap="com.taobao.taobaoadmin.mapper.PmsProductAttributeValueMapper.BaseResultMap"/>
+
+       <!-- <collection property="subjectProductRelationList" column="{productId=id}" select="selectSubjectProductRelationByProductId"/>
+        <collection property="prefrenceAreaProductRelationList" column="{productId=id}" select="selectPrefrenceAreaProductRelationByProductId"/>
+-->
+    </resultMap>
+
+    <select id="getUpdateInfo" resultMap="updateInfoMap">
+        SELECT  *,
+                pc.parent_id as cateParentId,
+                l.id as ladder_id, l.product_id as ladder_product_id, l.discount as ladder_discount, l.count as ladder_count, l.price as ladder_price,
+                pf.id as full_id, pf.product_id as full_product_id, pf.full_price as full_full_price,pf.reduce_price as  full_reduce_price,
+                m.id as member_id,m.product_id as member_product_id,m.member_level_id as member_member_level_id,m.member_price as member_member_price,m.member_level_name as member_member_level_name,
+                s.id as sku_id,s.product_id as sku_product_id,s.price as sku_price,s.low_stock as sku_low_stock,s.pic as sku_pic,s.sale,s.sku_code as sku_sku_code,s.sp1 as sku_sp1,s.sp2 as sku_sp2,s.sp3 as sku_sp3,s.stock as sku_stock,
+                a.id as attribute_id,a.product_id as attribute_product_id,a.product_attribute_id as attribute_product_attribute_id,a.value as attribute_value
+        FROM pms_product p
+        LEFT  JOIN pms_product_category pc on pc.id = p.product_category_id
+        LEFT  JOIN pms_product_ladder l on p.id = l.product_id
+        left  JOIN pms_product_full_reduction pf on pf.product_id = p.id
+        LEFT  JOIN pms_member_price m on m.product_id = p.id
+        LEFT  JOIN pms_sku_stock s ON s.product_id = p.id
+        LEFT  JOIN pms_product_attribute_value a ON a.product_id = p.id
+        WHERE p.id = #{id};
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.taobaoadmin.dao.Sms.SmsCouponDao">
+    <resultMap id="couponItemParam" type="com.taobao.taobaoadmin.dto.Sms.SmsCouponParam" extends="com.taobao.taobaoadmin.mapper.SmsCouponMapper.BaseResultMap">
+        <collection property="productRelationList" columnPrefix="cpx_" resultMap="com.taobao.taobaoadmin.mapper.SmsCouponProductRelationMapper.BaseResultMap"></collection>
+        <collection property="productCategoryRelationList" columnPrefix="cpcr_" resultMap="com.taobao.taobaoadmin.mapper.SmsCouponProductCategoryRelationMapper.BaseResultMap"></collection>
+    </resultMap>
+
+
+    <select id="getItem" resultMap="couponItemParam">
+        SELECT
+              c.*,
+              /*优惠券绑定的商品*/
+              cpr.id  as cpr_id,
+              cpr.product_id  as cpr_product_id,
+              cpr.product_name  as cpr_product_name,
+              cpr.product_sn  as cpr_product_sn,
+              /*优惠券绑定的商品分类*/
+              cpcr.id  as cpcr_id,
+              cpcr.product_category_id  as cpcr_product_category_id,
+              cpcr.product_category_name  as cpcr_product_category_name,
+              cpcr.parent_category_name  as cpcr_parent_category_name
+        FROM
+              sms_coupon c
+              LEFT JOIN sms_coupon_product_relation cpr ON c.id = cpr.coupon_id
+              LEFT JOIN sms_coupon_product_category_relation cpcr ON c.id = cpcr.coupon_id
+        WHERE
+              c.id = #{id}
+    </select>
+</mapper>

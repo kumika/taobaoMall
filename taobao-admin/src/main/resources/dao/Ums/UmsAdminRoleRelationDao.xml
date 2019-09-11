@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.taobaoadmin.dao.UmsAdminRoleRelationDao">
+
+
+    <select id="getRoleList" resultMap="com.taobao.taobaoadmin.mapper.UmsRoleMapper.BaseResultMap">
+        select r.*
+        from ums_admin_role_relation ar left join ums_role r on ar.role_id = r.id
+        where ar.admin_id = #{adminId}
+    </select>
+
+
+    <select id="getRolePermissionList" resultMap="com.taobao.taobaoadmin.mapper.UmsPermissionMapper.BaseResultMap">
+        select p.*
+        from ums_admin_role_relation ar left join ums_role r on ar.role_id = r.id
+        left join ums_role_permission_relation rp on r.id =rp.role_id
+        left join ums_permission p on rp.permission_id = p.id
+        WHERE  ar.admin_id = #{adminId} AND  p.id IS  NOT  NULL
+    </select>
+
+    <select id="getPermissionList" resultMap="com.taobao.taobaoadmin.mapper.UmsPermissionMapper.BaseResultMap">
+        select
+             p.*
+        FROM
+             ums_admin_role_relation ar
+             LEFT JOIN ums_role r ON  ar.role_id = r.id
+             LEFT JOIN ums_role_permission_relation rp ON r.id = rp.role_id
+             LEFT JOIN ums_permission p ON rp.permission_id = p.id
+         WHERE
+              ar.admin_id = #{adminId}
+              AND  p.id is not NULL
+              AND  p.id not in (
+                    SELECT
+                        p.id
+                    FROM
+                      ums_admin_permission_relation  pr
+                      left JOIN  ums_permission p on pr.permission_id = p.id
+                    WHERE
+                      pr.type = -1
+                      AND pr.admin_id = #{adminId}
+              )
+          UNION
+          SELECT
+            p.*
+          FROM
+            ums_admin_permission_relation pr
+            left join ums_permission p on pr.permission_id = p.id
+          WHERE
+            pr.type = 1
+            and pr.admin_id = #{adminId}
+    </select>
+
+</mapper>

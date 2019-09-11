@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.taobaoadmin.dao.Oms.OmsOrderReturnApplyDao">
+    <!--
+            type：返回值的全限定类名，或类型别名。
+            extends： 就是继承，让别的返回集合也可以用
+            association与collection的区别：
+            嵌套使用collection，就是你查询星球对象，星球对象里有海洋属性，但是海洋是一个对象也有一个表格，它也有属性而且你页面也要显示，像俄罗斯套娃。简单说就是一对多
+            查询一个对象，这个对象里有一个别的表格的属性，此时使用association，就是一对一
+    -->
+    <resultMap id="returnApplyDetailResultMap"
+               type="com.taobao.taobaoadmin.dto.Oms.OmsOrderReturnApplyResult"
+               extends="com.taobao.taobaoadmin.mapper.OmsOrderReturnApplyMapper.BaseResultMap">
+        <!--
+            association： 级联
+            property: 映射JavaBean的属性，这里是OmsOrderReturnApplyResult对象的属性，就是客户要的数据
+            resultMap: 返回集合
+            columnPrefix：数据库的列名或者列标签的前缀。
+            级联，返回集合是OmsCompanyAddressMapper的BaseResultMap，
+            要是SQL语句有相同列名的情况区别在于前缀ca_，映射OmsOrderReturnApplyResult对象的属性companyAddress
+        -->
+        <association property="companyAddress"
+                     resultMap="com.taobao.taobaoadmin.mapper.OmsCompanyAddressMapper.BaseResultMap"
+                     columnPrefix="ca_"/>
+    </resultMap>
+
+
+
+    <select id="getList" resultMap="com.taobao.taobaoadmin.mapper.OmsOrderReturnApplyMapper.BaseResultMap">
+        select
+              id,
+              create_time,
+              member_username,
+              product_real_price,
+              product_name,
+              status,
+              handle_time
+        from
+              oms_order_return_apply
+        WHERE
+              1 = 1
+              <if test="queryParam.id != null">
+                  AND  id = #{queryParam.id}
+              </if>
+        <if test="queryParam.status != null">
+            AND  status = #{queryParam.status}
+        </if>
+        <if test="queryParam.handleMan != null and queryParam.handleMan!=''">
+            AND  handle_man = #{queryParam.handleMan}
+        </if>
+        <if test="queryParam.createTime != null and queryParam.createTime!=''">
+            AND  create_time LIKE  CONCAT (#{queryParam.createTime},'%')
+        </if>
+        <if test="queryParam.handleTime != null and queryParam.handleTime!=''">
+            AND  handle_time LIKE  CONCAT (#{queryParam.handleTime},'%')
+        </if>
+        <if test="queryParam.receiverKeyword != null and queryParam.receiverKeyword!=''">
+            AND (
+                return_name LIKE CONCAT ("%",#{queryParam.receiverKeyword},"%")
+                OR
+                return_phone LIKE CONCAT ("%",#{queryParam.receiverKeyword},"%")
+            )
+        </if>
+    </select>
+
+    <select id="getDetail" resultMap="returnApplyDetailResultMap">
+        SELECT
+          ra.*,
+          ca.id as ca_id,
+          ca.address_name as ca_address_name,
+          ca.`name` as ca_name,
+          ca.phone as ca_phone,
+          ca.province as ca_province,
+          ca.city as ca_city,
+          ca.region as ca_region,
+          ca.detail_address as ca_detail_address
+        FROM
+          oms_order_return_apply as ra
+          left join
+          oms_company_address as ca ON  ra.company_address_id = ca.id
+        WHERE
+          ra.id=#{id}
+    </select>
+
+
+
+</mapper>

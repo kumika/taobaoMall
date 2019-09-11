@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.taobaoadmin.dao.pms.PmsProductCategoryDao">
+    <resultMap id="listWithChildrenMap"   type="com.taobao.taobaoadmin.dto.Pms.PmsProductCategoryWithChildrenItem"
+               extends="com.taobao.taobaoadmin.mapper.PmsProductCategoryMapper.BaseResultMap">
+
+        <!--
+        collection 为关联关系，是实现一对多的关键
+　　　　1. property 为javabean中容器对应字段名
+　　　　2. ofType 指定集合中元素的对象类型
+　　　　3. select 使用另一个查询封装的结果
+　　　　4. column 为数据库中的列名，与select配合使用
+        columnPrefix是表示在Collection所包括的字段，在SQL书写的时候，这些字段自动添加上“XXX”的前缀，与其他字段名区别开
+        这里是把全部字段都加上”child_“前缀。
+        -->
+        <collection property="children" resultMap="com.taobao.taobaoadmin.mapper.PmsProductCategoryMapper.BaseResultMap"
+                    columnPrefix="child_"/>
+    </resultMap>
+<!--
+column 对应数据库表的列名
+property 属性对应javabean的属性名
+-->
+
+    <select id="listWithChildren" resultMap="listWithChildrenMap">
+        SELECT
+            c1.id,
+            c1.name,
+            c2.id   as child_id,
+            c2.name as child_name
+        FROM
+            pms_product_category c1
+        left join  pms_product_category c2 ON  c1.id = c2.parent_id
+        WHERE  c1.parent_id = 0
+    </select>
+
+
+</mapper>
